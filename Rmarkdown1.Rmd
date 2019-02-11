@@ -117,13 +117,25 @@ trte[tr]=0
 Mdf=data.frame(M,"istest"=as.factor(trte))
 ```
 
-**Q9:** 
-
+**Q9:** The mathematical formula for the K-nearest neighbours estimator is
+$\hat{y}(x) = \max_j \hat{P}(Y = j|X = x_0)$, where
+$$\hat{P}(Y = j | X = x_0) = \frac{1}{K} \sum_{i \in \mathcal{N}_0} I(y_i = j)$$
 
 **Q10:** 
 
 ```{r,eval=TRUE}
-# here you write your code
+k_values = 1:30
+
+test.e <- vector(mode = "numeric", length = 30)
+train.e <- vector(mode = "numeric", length = 30)
+
+for(k in k_values){
+  test.e[k] = mean(Mdf[-tr,]$y != knn(Mdf[tr,], Mdf[-tr,],Mdf[tr,]$y, k = k, l = 0))
+  train.e[k] = mean(Mdf[tr,]$y != knn(Mdf[tr,], Mdf[tr,],Mdf[tr,]$y, k = k, l = 0))
+}
+qplot(k_values, test.e)
+qplot(k_values, train.e)
+
 ```
 
 
