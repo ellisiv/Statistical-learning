@@ -329,3 +329,4 @@ lines(thislambda,rep(sigma^2,500),col="orange")
 abline(v=thislambda[which.min(tot)],col=3)
 ```
 
+slkughsoliufbh+
