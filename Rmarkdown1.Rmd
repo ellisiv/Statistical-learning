@@ -162,9 +162,19 @@ cv = sapply(ks, function(k){
 **Q11:** 
 
 ```{r, eval=FALSE}
-cv.e = # fill in
-cv.se = #fill in
-k.min = # fill in
+cv.e <- vector(mode = "numeric", length = 30)
+for(i in 1:30){
+  cv.e[i] = mean(cv[,i])
+}
+cv.se <- vector(mode = "numeric", length = 30)
+for(i in 1:30){
+  for(j in 1:5){
+    cv.se[i] = cv.se[i] + (cv[j,i]- cv.e[i]) ** 2
+  }
+  cv.se[i] = sqrt(1/n * cv.se[i])
+}
+
+k.min <- which.min(cv.e)
 ```
 
 **Q12:** 
@@ -205,7 +215,7 @@ box()
 **Q14:** 
 
 ```{r,eval=FALSE}
-K=# your choice from Q13
+K=30
   
 # knn with prob=TRUE outputs the probability of the winning class
 # therefore we have to do an extra step to get the probability of player 1 winning
@@ -227,25 +237,33 @@ library(pROC)
 
 
 # Problem 3: Bias-variance trade-off 
+Let $\bf{x}$ be a $(p+1) \times 1$ vector of covariates (including a constant 1 as the first term). We are considering a regression problem $Y = f(\bf{x})$, where $\text{E}(\bf{\epsilon}) = 0$ and $\text{Var}(\bf{\epsilon}) = \sigma^2$. We assume that the true function is really a linear combination of the observed covariates, which means that the irreducible error only lies in the $\bf{\epsilon}$-term. 
 
-Here you see how to write formulas with latex (needed below)
-$$
-\hat{\boldsymbol \beta}=({\bf X}^T{\bf X})^{-1}{\bf X}^T{\bf Y}
-$$
+We will consider two estimators for $\bf{\beta}$. The estimators are based on a training set where $\text{X}$ is a $n\times (p-1)$ design matrix and $\textbf{Y}$ is a $n \times 1$ response vector, with independent entries.
+Thus $\text{E}(\textbf{Y})=\text{X}\bf{\beta}$ and covariance matrix $\text{Cov}(\textbf{Y})=\sigma^2 \text{I}$
 
+The first estimator $\hat{\beta}$ is the classical least squares estimator, defined as $$\bf{\hat{\beta}} = (\text{X}^T\text{X})^{-1}\text{X}^T\textbf{Y}$$.
 **Q16:** 
-
-**Q17:** 
-
+$$\text{E}(\boldsymbol{\hat{\beta}}) = (\text{X}^T\text{X})^{-1}\text{X}^T\text{E}[\textbf{Y}] = (\text{X}^T\text{X})^{-1}\text{X}^T\text{X} \boldsymbol{\beta} = \boldsymbol{\beta}$$ 
+$$\text{Var}(\boldsymbol{\hat{\beta}}) = (\text{X}^T\text{X})^{-1}\text{X}^T \sigma^2 \text{I} \big[ (\text{X}^T\text{X})^{-1}\text{X}^T\big]^T = \sigma^2 (\text{X}^T\text{X})^{-1}\text{X}^T\text{X}(\text{X}^T\text{X})^{-1} = \sigma^2 (\text{X}^T\text{X})^{-1}$$
+**Q17:**
+$\hat{f}(\mathbf{x_0}) = \bf{x_0}^T\boldsymbol{\hat{\beta}}$, thus:
+$$\text{E}[\hat{f}(\mathbf{x_0})] = \mathbf{x_0}^T \text{E}[\boldsymbol{\hat{\beta}}] = \mathbf{x_0}^T \boldsymbol{\beta}$$
+and
+$$\text{Var}(\hat{f}(\mathbf{x_0})) = \mathbf{x_0}^T\sigma^2(\text{X}^T\text{X})^{-1}\mathbf{x_0}$$
 **Q18:** 
-$$\text{E}[(Y_0-\hat{f}({\bf x}_0))^2]=[\text{E}(\hat{f}({\bf x}_0)-f({\bf x}_0)]^2+\text{Var}(\hat{f}({\bf x}_0) ) + \text{Var}(\varepsilon)$$
+$$\text{E}[(Y_0-\hat{f}(\mathbf{x_0}))]=[\text{E}(\hat{f}(\mathbf{x_0})-f(\mathbf{x}_0))]^2+\text{Var}(\hat{f}(\mathbf{x}_0) ) + \text{Var}(\boldsymbol{\epsilon}) = 0 + \sigma^2\mathbf{x_0}T(\text{X}^T\text{X})^{-1}\mathbf{x_0} + \sigma^2 \\
+= \sigma^2(\mathbf{x_0}^T(\text{X}^T\text{X})^{-1}\mathbf{x_0} + I)$$
 
-Ridge estimator:
-$$
-\widetilde{\boldsymbol \beta}=({\bf X}^T{\bf X}+\lambda {\bf I})^{-1}{\bf X}^T{\bf Y}
-$$
+The second estimator of $\boldsymbol{\beta}$ is the Ridge regression estimator, defined as 
 
+$$\widetilde{\boldsymbol \beta}=(\text{X}^T\text{X}+\lambda \text{I})^{-1}\text{X}^T{\mathbf Y}$$
+Where the $\lambda$ is called a regularization parameter. Notice that for $\lambda = 0$, $\boldsymbol{\hat{\beta}}=\boldsymbol{\widetilde{\beta}}$. 
 **Q19:** 
+$$\text{E}[\boldsymbol{\widetilde{\beta}}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \: \text{E}[\mathbf{Y}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}\boldsymbol{\beta},$$ 
+thus the estimator is biased.
+$$\text{Var}(\boldsymbol{\widetilde{\beta}}) = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \text{Var}(\mathbf{Y})\big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \sigma^2 I \big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T \\
+= \sigma^2(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\big[ \text{X}(\text{X}^T\text{X}+\lambda I)^{-1} \big] = \sigma^2(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}(\text{X}^T\text{X}+\lambda I)^{-1}$$
 
 **Q20:** 
 
@@ -265,7 +283,6 @@ sigma=values$sigma
 sigma
 ```
 
-Hint: we perform matrix multiplication using `%*%`, transpose of a matrix `A` with `t(A)` and inverse with `solve(A)`. 
 
 **Q22:** 
 
