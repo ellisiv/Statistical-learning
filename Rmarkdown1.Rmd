@@ -103,6 +103,8 @@ A little reasearch shows that noral FEV for males lies between approximately 2 a
 # Problem 2: Classification 
 
 ```{r}
+library(ggplot2)
+library(lattice)
 library(class)# for function knn
 library(caret)# for confusion matrices
 
@@ -133,8 +135,8 @@ for(k in k_values){
   test.e[k] = mean(Mdf[-tr,]$y != knn(Mdf[tr,], Mdf[-tr,],Mdf[tr,]$y, k = k, l = 0))
   train.e[k] = mean(Mdf[tr,]$y != knn(Mdf[tr,], Mdf[tr,],Mdf[tr,]$y, k = k, l = 0))
 }
-qplot(k_values, test.e)
-qplot(k_values, train.e)
+qplot(k_values, test.e)+labs(title="Misclassification error for test data")
+qplot(k_values, train.e)+labs(title="Misclassification error for training data")
 
 ```
 
@@ -171,13 +173,13 @@ for(i in 1:30){
   for(j in 1:5){
     cv.se[i] = cv.se[i] + (cv[j,i]- cv.e[i]) ** 2
   }
-  cv.se[i] = sqrt(1/n * cv.se[i])
+  cv.se[i] = sqrt(1/5 * cv.se[i])
 }
 
 k.min <- which.min(cv.e)
 ```
 
-**Q12:** 
+**Q12:** For a KNN method, the bias decreases as K increases. This is obvious because for small k the model would be over fitted and as k grows it adapts more smoothly to other data sets. The variance of the training set increases when K increases. This is logical since when K = 1, the variance should be zero because all the datapoints are their own nearest neighbour. For this is not the case, and therefore we dont see a variance equal to zero for K = 1. We observe that the variance in $\hat{y}(x)$ for the test data is relatively stable, however we expect it to increase for sufficiently large values of K.
 
 ```{r,eval=FALSE}
 library(colorspace)
@@ -191,7 +193,7 @@ lines(ks, test.e, type="o", pch = 16, ylim = c(0.5, 0.7), col = co[1])
 legend("topright", legend = c("Test", "5-fold CV", "Training"), lty = 1, col=co)
 ```
 
-**Q13:** 
+**Q13:** The most important properties of a good value for K, is that it provides a small misclassification error and it should produce a prediction model with low bias. The strategy is to find the k-value which produces the smallest misclassification error in the 5-fold test and check if we can find a k where the misclassification error is not that much worse and which gives a smaller bias. We accept a misclassification error equal to the error of the best k plus one time its standard deviation, and choose the largest k satisfying this condition.
 
 ```{r,eval=FALSE}
 k = tail(which(cv.e < cv.e[k.min] + cv.se[k.min]), 1)
@@ -255,22 +257,24 @@ and
 $$\text{Var}(\hat{f}(\mathbf{x_0})) = \mathbf{x_0}^T\sigma^2(\text{X}^T\text{X})^{-1}\mathbf{x_0}$$
 **Q18:** 
 $$\text{E}[(Y_0-\hat{f}(\mathbf{x_0}))]=[\text{E}(\hat{f}(\mathbf{x_0})-f(\mathbf{x}_0))]^2+\text{Var}(\hat{f}(\mathbf{x}_0) ) + \text{Var}(\boldsymbol{\epsilon}) = 0 + \sigma^2\mathbf{x_0}T(\text{X}^T\text{X})^{-1}\mathbf{x_0} + \sigma^2 \\
-= \sigma^2(\mathbf{x_0}^T(\text{X}^T\text{X})^{-1}\mathbf{x_0} + I)$$
+= \sigma^2(\mathbf{x_0}^T(\text{X}^T\text{X})^{-1}\mathbf{x_0} + 1)$$
 
 The second estimator of $\boldsymbol{\beta}$ is the Ridge regression estimator, defined as 
 
 $$\widetilde{\boldsymbol \beta}=(\text{X}^T\text{X}+\lambda \text{I})^{-1}\text{X}^T{\mathbf Y}$$
-Where the $\lambda$ is called a regularization parameter. Notice that for $\lambda = 0$, $\boldsymbol{\hat{\beta}}=\boldsymbol{\widetilde{\beta}}$.   
+Where the $\lambda$ is called a regularization parameter. Notice that for $\lambda = 0$, $\boldsymbol{\hat{\beta}}=\boldsymbol{\widetilde{\beta}}$. To simplify, we define $\text{W} = (\text{X}^T\text{X}+\lambda \text{I})^{-1}\text{X}^T$.  
 **Q19:** 
-$$\text{E}[\boldsymbol{\widetilde{\beta}}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \: \text{E}[\mathbf{Y}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}\boldsymbol{\beta},$$   
+$$\text{E}[\boldsymbol{\widetilde{\beta}}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \, \text{E}[\mathbf{Y}] = \text{W}\text{X}\boldsymbol{\beta},$$   
 thus the estimator is biased.  
-$$\text{Var}(\boldsymbol{\widetilde{\beta}}) = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \text{Var}(\mathbf{Y})\big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \sigma^2 I \big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T \\ 
-= \sigma^2(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\big[ \text{X}(\text{X}^T\text{X}+\lambda I)^{-1} \big] = \sigma^2(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}(\text{X}^T\text{X}+\lambda I)^{-1}$$
+$$\text{Var}(\boldsymbol{\widetilde{\beta}}) = \text{W} \text{Var}(\mathbf{Y})\text{W}^T = \text{W} \sigma^2 I \text{W}^T 
+= \sigma \text{W}\text{W}^T \sigma = \sigma(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}(\text{X}^T\text{X}+\lambda I)^{-1}\sigma$$
 
-**Q20:** 
+**Q20:** $$\text{E}(\widetilde{f}(x_0)) = \text{E}(x_0^T \widetilde{\beta}) = x_0^T\text{E}(\widetilde{\beta})=x_0^T\text{W}\text{X}\beta$$
+
+$$\text{Var}(\widetilde{f}(x_0)) = x_0^T\text{Var}(\widetilde{\beta})x_0 = \sigma x_0^T \text{W} \text{W}^T x_0 \sigma = \sigma (x_0^T\text{W})(x_0^T\text{W})^T\sigma$$
 
 **Q21:** 
-$$\text{E}[(Y_0-\widetilde{f}({\bf x}_0))^2]=[\text{E}(\widetilde{f}({\bf x}_0)-f({\bf x}_0)]^2+\text{Var}(\widetilde{f}({\bf x}_0) ) + \text{Var}(\varepsilon)$$
+$$\text{E}[(Y_0-\widetilde{f}({\bf x}_0))^2]=[\text{E}(\widetilde{f}({\bf x}_0)-f({\bf x}_0)]^2+\text{Var}(\widetilde{f}({\bf x}_0) ) + \text{Var}(\varepsilon) = (x_0^T\text{W}\text{X}\beta - x_0^T\beta)^2 + \sigma (x_0^T\text{W})(x_0^T\text{W})^T\sigma + \sigma^2$$
 
 
 ```{r}
@@ -292,7 +296,9 @@ sigma
 sqbias=function(lambda,X,x0,beta)
 {
   p=dim(X)[2]
-  value= 
+  inv=solve(t(X)%*%X+lambda*diag(p))
+  W = inv%*%t(X)
+  value= (t(x0)%*%W%*%X%*%beta-t(x0)%*%beta)^2
   return(value)
 }
 thislambda=seq(0,2,length=500)
@@ -308,7 +314,8 @@ variance=function(lambda,X,x0,sigma)
 {
   p=dim(X)[2]
   inv=solve(t(X)%*%X+lambda*diag(p))
-  value=#HERE YOU FILL IN
+  W = inv%*%t(X)
+  value=sigma*(t(x0)%*%W)%*%t(t(x0)%*%W)*sigma
   return(value)
 }
 thislambda=seq(0,2,length=500)
@@ -331,4 +338,4 @@ lines(thislambda,rep(sigma^2,500),col="orange")
 abline(v=thislambda[which.min(tot)],col=3)
 ```
 
-slkughsoliufbh+
+
