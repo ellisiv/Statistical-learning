@@ -214,7 +214,7 @@ box()
 
 **Q14:** 
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 K=30
   
 # knn with prob=TRUE outputs the probability of the winning class
@@ -226,7 +226,9 @@ KNNprob= ifelse(KNNclass == "0", 1-KNNprobwinning, KNNprobwinning)
 
 library(pROC)
 # now you use predictor=KNNprob and response=M[-tr,1] 
-# in your call to the function roc in the pROC library
+# in your call to the function roc in the pROC library-tr,1
+M_roc = roc(M[-tr,1], KNNprob, lagacy.axes = TRUE )
+ggroc(M_roc) + ggtitle("Vi prover aa plotte ROC")
 ```
 
 **Q15:**
