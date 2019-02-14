@@ -28,18 +28,18 @@ $$\textrm{log(FEV)} = \beta_0 + \beta_1 \cdot \textrm{Age} + \beta_2 \cdot \text
 
 **Q2:** In the summary of modelA, there are some terms that need explaining:
 
- * Estimate: The estimated weights of the covariates in the fitted model. Those are the $\beta$s used in Q1. The particular value "Intercept" is the value of the response variable when all covariates have value zero.
+ * Estimate: The estimated weights of the covariates in the fitted model. This is interpreted as the increase of the response variable as the covariate increases with 1 unit. Those are the $\beta$s used in Q1. The particular value "Intercept" is the value of the response variable when all covariates have value zero.
  
  * Std.Error: The std.Error or the standard deviation error is the error in the estimates for $\beta$, that is: $\sqrt{\textrm{Var}(\beta\textrm{s})}$
  
  * Residual standard error: $\sqrt{\frac{\textrm{RSS}}{\textrm{degrees of freedom}}}$
  This is the standard deviation of the residuals. The residuals are a measure of the distance between the data points and the fitted model. 
  
- * F-statistic: The F-statistic compares our fitted model to a much simpler alternative model with Intercept as only $\beta$. The p-value is then a hypothesis test where H0 is the hypothesis where all other $\beta$s than $\beta_0 = 0$, that is the "Intercept only model" is equally as good as our fitted model. H1 is then the hypothesis that at least one other $\beta \neq 0$
+ * F-statistic: The F-statistic is a hypothesis test which compares our fitted model to a much simpler alternative model. This model is called a "Intercept only model" which is a linear model with $\beta_0$ as only non-zero weight. The p-value of the F-statistic is the probability that the "Intercept only model" is as good as our fitted model, i.e. the probability that all $\beta$s$=0$ except for $\beta_0$.
 
-**Q3:** The proportion of variability explained by the fitted modelA is represented my the "Multiple R-squared" and is in our case approximately 81%.
+**Q3:** The proportion of variability explained by the fitted modelA is represented my the "Multiple R-squared" and is in our case approximately 81%. This means that 81% of the observed variance is explained by our linear model, which is a fairly good score.
 
-**Q4:** At first glance at the plot below of the fitted values vs. residuals the points look normally distributed around 0. By further inspection we see that the points are slightly shiftet upwards around 0.8 and there seems to be a slightly higher variance for very high and low fitted values. It is also an important observation that there seems to be more extreme negative residuals, but there are more, and less extreme, positive residual observations. This last observation is also supported by the Q-Q plot. Here we see a curvature which can imply a slightly left skewed distribution.
+**Q4:** At first glance the plot below of the fitted values vs. residuals, appears normally distributed around 0. By further inspection we see that the points are slightly shiftet upwards around Fitted value = 0.8 and there seems to be a slightly higher variance for very high and very low fitted values. It is also an important observation that there seems to be more extreme negative residuals, but there are more, and less extreme, positive residual observations. This last observation is also supported by the Q-Q plot. Here we see a curvature which may imply a slightly left skewed distribution.
 The Anderson-Darling normality test also rejects the null hypothesis that the data follows a normal distribution.
 ```{r, echo=TRUE}
 library(ggplot2)
@@ -63,7 +63,7 @@ library(nortest)
 ad.test(rstudent(modelA))
 ```
 
-**Q5:** We see that modelB, the residuals are not equally distributed around zero and the variance increases for higher fitted values. We would prefere to use modelA when making inference about FEV because the mean value of the residuals in modelA is approxiamtely zero for all fitted values and the variance is stabile. We have observed that none of this is true for modelB.
+**Q5:** We now introduce a new model, modelB, which is defined below. We see that in modelB, the residuals are not equally distributed around zero and the variance increases for higher fitted values. We would prefere to use modelA when making inference about FEV because the mean value of the residuals in modelA is approximately zero for all fitted values and the variance is stabile. We have observed that none of this is true for modelB.
 
 ```{r,eval=TRUE, echo=FALSE}
 modelB = lm(FEV ~ Age + Htcm + Gender + Smoke, data=lungcap)
@@ -76,15 +76,14 @@ ggplot(modelB, aes(.fitted, .stdresid)) + geom_point(pch = 21) +
 ```
 
 **Q6:** 
-If we use the p-value approach 
-From the estimation of the coefficients of the linear model it is assumed that they follow a t-distribution. 
+We are interessted in finding out if the $\beta_1 = 0$, which means that all observed correlation between Age and FEV are due to chance. The resulting p-value of the hypothesis test is presented in the summary as the covariate's $\text{Pr(>|t|)}_{\text{Age}} = 7.1\cdot 10^{-12}$. This is a very small p-value, it is interpreted as the probability that we observe this correlation given $\beta_1 = 0$ is $7.1 \cdot 10^{-12}$. Considering that we would reject $\text{H}_0$ at $p < 0.05$, we definately reject it in our case. 
 
-**Q7:** 
-
+**Q7:** A prediction interval for a t-distributed variable is on the form $$\Bigg[ \hat{\beta_1} \pm t_{\frac{\alpha}{2}, n-p-1}\text{SD}(\hat{\beta_1}) \Bigg] = \Bigg[ \hat{\beta_1} \pm t_{0.005,654-4-1}\text{SD}(\hat{\beta_1}) \Bigg] $$  
+This is for our model given as:
 ```{r,eval=TRUE, echo=TRUE}
-confint(modelA, level=0.99)
+cat('[',confint(modelA, level=0.99)[2,1],', ',confint(modelA, level=0.99)[2,2],']' )
 ```
-
+This tells us that there is a 99% chance of that the true value of $\beta_1$ lies between [0.0147, 0.0320].
 
 **Q8:**
 
@@ -99,6 +98,7 @@ upp <- exp(prelog[3])
 
 cat('Predicted "forced expiratory colume" (FEV) = ', prediction, '. \n 95% confidence intercal = [',low, ',',upp,']' )
 ```
+A little reasearch shows that noral FEV for males lies between approximately 2 and 5, which means that the information provided by the prediction interval is of little value as the interval is relatively wide.
 
 # Problem 2: Classification 
 
@@ -118,8 +118,8 @@ Mdf=data.frame(M,"istest"=as.factor(trte))
 ```
 
 **Q9:** The mathematical formula for the K-nearest neighbours estimator is
-$\hat{y}(x) = \max_j \hat{P}(Y = j|X = x_0)$, where
-$$\hat{P}(Y = j | X = x_0) = \frac{1}{K} \sum_{i \in \mathcal{N}_0} I(y_i = j)$$
+$\hat{y}(x) = \underset{j}{\mathrm{argmax}} \hat{P}(Y = j|X = x_0)$, where
+$$\hat{P}(Y = j | X = x_0) = \frac{1}{K} \sum_{i \in \mathcal{N}_0} I(y_i = j)$$ and $j \in \{0,\: 1\}$
 
 **Q10:** 
 
@@ -258,11 +258,11 @@ $$\text{E}[(Y_0-\hat{f}(\mathbf{x_0}))]=[\text{E}(\hat{f}(\mathbf{x_0})-f(\mathb
 The second estimator of $\boldsymbol{\beta}$ is the Ridge regression estimator, defined as 
 
 $$\widetilde{\boldsymbol \beta}=(\text{X}^T\text{X}+\lambda \text{I})^{-1}\text{X}^T{\mathbf Y}$$
-Where the $\lambda$ is called a regularization parameter. Notice that for $\lambda = 0$, $\boldsymbol{\hat{\beta}}=\boldsymbol{\widetilde{\beta}}$. 
+Where the $\lambda$ is called a regularization parameter. Notice that for $\lambda = 0$, $\boldsymbol{\hat{\beta}}=\boldsymbol{\widetilde{\beta}}$.   
 **Q19:** 
-$$\text{E}[\boldsymbol{\widetilde{\beta}}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \: \text{E}[\mathbf{Y}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}\boldsymbol{\beta},$$ 
-thus the estimator is biased.
-$$\text{Var}(\boldsymbol{\widetilde{\beta}}) = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \text{Var}(\mathbf{Y})\big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \sigma^2 I \big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T \\
+$$\text{E}[\boldsymbol{\widetilde{\beta}}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \: \text{E}[\mathbf{Y}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}\boldsymbol{\beta},$$   
+thus the estimator is biased.  
+$$\text{Var}(\boldsymbol{\widetilde{\beta}}) = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \text{Var}(\mathbf{Y})\big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \sigma^2 I \big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T \\ 
 = \sigma^2(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\big[ \text{X}(\text{X}^T\text{X}+\lambda I)^{-1} \big] = \sigma^2(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}(\text{X}^T\text{X}+\lambda I)^{-1}$$
 
 **Q20:** 
@@ -290,7 +290,7 @@ sigma
 sqbias=function(lambda,X,x0,beta)
 {
   p=dim(X)[2]
-  value= #HERE YOU FILL IN
+  value= 
   return(value)
 }
 thislambda=seq(0,2,length=500)
