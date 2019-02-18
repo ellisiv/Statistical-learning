@@ -29,12 +29,12 @@ $$\textrm{log(FEV)} = \beta_0 + \beta_1 \cdot \textrm{Age} + \beta_2 \cdot \text
 **Q2:** In the summary of modelA, there are some terms that need explaining:
 
  * Estimate: The estimated weights of the covariates in the fitted model. This is interpreted as the increase of the response variable as the covariate increases with 1 unit. Those are the $\beta$s used in Q1. The particular value "Intercept" is the value of the response variable when all covariates have value zero.
-
+ 
  * Std.Error: The std.Error or the standard deviation error is the error in the estimates for $\beta$, that is: $\sqrt{\textrm{Var}(\beta\textrm{s})}$
-
+ 
  * Residual standard error: $\sqrt{\frac{\textrm{RSS}}{\textrm{degrees of freedom}}}$
- This is the standard deviation of the residuals. The residuals are a measure of the distance between the data points and the fitted model.
-
+ This is the standard deviation of the residuals. The residuals are a measure of the distance between the data points and the fitted model. 
+ 
  * F-statistic: The F-statistic is a hypothesis test which compares our fitted model to a much simpler alternative model. This model is called a "Intercept only model" which is a linear model with $\beta_0$ as only non-zero weight. The p-value of the F-statistic is the probability that the "Intercept only model" is as good as our fitted model, i.e. the probability that all $\beta$s$=0$ except for $\beta_0$.
 
 **Q3:** The proportion of variability explained by the fitted modelA is represented my the "Multiple R-squared" and is in our case approximately 81%. This means that 81% of the observed variance is explained by our linear model, which is a fairly good score.
@@ -53,13 +53,13 @@ ggplot(modelA, aes(.fitted, .stdresid)) + geom_point(pch = 21) +
 
 # qq-plot of residuals
 ggplot(modelA, aes(sample = .stdresid)) +
-  stat_qq(pch = 19) +
+  stat_qq(pch = 19) + 
   geom_abline(intercept = 0, slope = 1, linetype = "dotted") +
-  labs(x = "Theoretical quantiles", y = "Standardized residuals",
+  labs(x = "Theoretical quantiles", y = "Standardized residuals", 
        title = "Normal Q-Q", subtitle = deparse(modelA$call))
 
 # normality test
-library(nortest)
+library(nortest) 
 ad.test(rstudent(modelA))
 ```
 
@@ -75,8 +75,8 @@ ggplot(modelB, aes(.fitted, .stdresid)) + geom_point(pch = 21) +
        subtitle = deparse(modelB$call))
 ```
 
-**Q6:**
-We are interessted in finding out if the $\beta_1 = 0$, which means that all observed correlation between Age and FEV are due to chance. The resulting p-value of the hypothesis test is presented in the summary as the covariate's $\text{Pr(>|t|)}_{\text{Age}} = 7.1\cdot 10^{-12}$. This is a very small p-value, it is interpreted as the probability that we observe this correlation given $\beta_1 = 0$ is $7.1 \cdot 10^{-12}$. Considering that we would reject $\text{H}_0$ at $p < 0.05$, we definately reject it in our case.
+**Q6:** 
+We are interessted in finding out if the $\beta_1 = 0$, which means that all observed correlation between Age and FEV are due to chance. The resulting p-value of the hypothesis test is presented in the summary as the covariate's $\text{Pr(>|t|)}_{\text{Age}} = 7.1\cdot 10^{-12}$. This is a very small p-value, it is interpreted as the probability that we observe this correlation given $\beta_1 = 0$ is $7.1 \cdot 10^{-12}$. Considering that we would reject $\text{H}_0$ at $p < 0.05$, we definately reject it in our case. 
 
 **Q7:** A prediction interval for a t-distributed variable is on the form $$\Bigg[ \hat{\beta_1} \pm t_{\frac{\alpha}{2}, n-p-1}\text{SD}(\hat{\beta_1}) \Bigg] = \Bigg[ \hat{\beta_1} \pm t_{0.005,654-4-1}\text{SD}(\hat{\beta_1}) \Bigg] $$  
 This is for our model given as:
@@ -100,15 +100,17 @@ cat('Predicted "forced expiratory colume" (FEV) = ', prediction, '. \n 95% confi
 ```
 A little reasearch shows that noral FEV for males lies between approximately 2 and 5, which means that the information provided by the prediction interval is of little value as the interval is relatively wide.
 
-# Problem 2: Classification
+# Problem 2: Classification 
 
-```{r}
+```{r, echo=FALSE}
+library(ggplot2)
+library(lattice)
 library(class)# for function knn
 library(caret)# for confusion matrices
 
 raw = read.csv("https://www.math.ntnu.no/emner/TMA4268/2019v/data/tennis.csv")
 M = na.omit(data.frame(y=as.factor(raw$Result),
-                       x1=raw$ACE.1-raw$UFE.1-raw$DBF.1,
+                       x1=raw$ACE.1-raw$UFE.1-raw$DBF.1, 
                        x2=raw$ACE.2-raw$UFE.2-raw$DBF.2))
 set.seed(4268) # for reproducibility
 tr = sample.int(nrow(M),nrow(M)/2)
@@ -121,7 +123,7 @@ Mdf=data.frame(M,"istest"=as.factor(trte))
 $\hat{y}(x) = \underset{j}{\mathrm{argmax}} \hat{P}(Y = j|X = x_0)$, where
 $$\hat{P}(Y = j | X = x_0) = \frac{1}{K} \sum_{i \in \mathcal{N}_0} I(y_i = j)$$ and $j \in \{0,\: 1\}$
 
-**Q10:**
+**Q10:** 
 
 ```{r,eval=TRUE}
 k_values = 1:30
@@ -133,22 +135,22 @@ for(k in k_values){
   test.e[k] = mean(Mdf[-tr,]$y != knn(Mdf[tr,], Mdf[-tr,],Mdf[tr,]$y, k = k, l = 0))
   train.e[k] = mean(Mdf[tr,]$y != knn(Mdf[tr,], Mdf[tr,],Mdf[tr,]$y, k = k, l = 0))
 }
-qplot(k_values, test.e)
-qplot(k_values, train.e)
+qplot(k_values, test.e)+labs(title="Misclassification error for test data")
+qplot(k_values, train.e)+labs(title="Misclassification error for training data")
 
 ```
 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 set.seed(0)
 ks = 1:30 # Choose K from 1 to 30.
 idx = createFolds(M[tr,1], k=5) # Divide the training data into 5 folds.
-# "Sapply" is a more efficient for-loop.
+# "Sapply" is a more efficient for-loop. 
 # We loop over each fold and each value in "ks"
 # and compute error rates for each combination.
-# All the error rates are stored in the matrix "cv",
+# All the error rates are stored in the matrix "cv", 
 # where folds are rows and values of $K$ are columns.
-cv = sapply(ks, function(k){
+cv = sapply(ks, function(k){ 
   sapply(seq_along(idx), function(j) {
     yhat = class::knn(train=M[tr[ -idx[[j]] ], -1],
                cl=M[tr[ -idx[[j]] ], 1],
@@ -159,9 +161,9 @@ cv = sapply(ks, function(k){
 ```
 
 
-**Q11:**
+**Q11:** 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 cv.e <- vector(mode = "numeric", length = 30)
 for(i in 1:30){
   cv.e[i] = mean(cv[,i])
@@ -171,15 +173,15 @@ for(i in 1:30){
   for(j in 1:5){
     cv.se[i] = cv.se[i] + (cv[j,i]- cv.e[i]) ** 2
   }
-  cv.se[i] = sqrt(1/n * cv.se[i])
+  cv.se[i] = sqrt(1/5 * cv.se[i])
 }
 
 k.min <- which.min(cv.e)
 ```
 
-**Q12:**
+**Q12:** For a KNN method, the bias decreases as K increases. This is obvious because for small k the model would be over fitted and as k grows it adapts more smoothly to other data sets. The variance of the training set increases when K increases. This is logical since when K = 1, the variance should be zero because all the datapoints are their own nearest neighbour. For this is not the case, and therefore we dont see a variance equal to zero for K = 1. We observe that the variance in $\hat{y}(x)$ for the test data is relatively stable, however we expect it to increase for sufficiently large values of K.
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 library(colorspace)
 co = rainbow_hcl(3)
 par(mar=c(4,4,1,1)+.1, mgp = c(3, 1, 0))
@@ -191,9 +193,9 @@ lines(ks, test.e, type="o", pch = 16, ylim = c(0.5, 0.7), col = co[1])
 legend("topright", legend = c("Test", "5-fold CV", "Training"), lty = 1, col=co)
 ```
 
-**Q13:**
+**Q13:** The most important properties of a good value for K, is that it provides a small misclassification error and it should produce a prediction model with low bias. The strategy is to find the k-value which produces the smallest misclassification error in the 5-fold test and check if we can find a k where the misclassification error is not that much worse and which gives a smaller bias. We accept a misclassification error equal to the error of the best k plus one time its standard deviation, and choose the largest k satisfying this condition.
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 k = tail(which(cv.e < cv.e[k.min] + cv.se[k.min]), 1)
 size = 100
 xnew = apply(M[tr,-1], 2, function(X) seq(min(X), max(X), length.out=size))
@@ -201,25 +203,22 @@ grid = expand.grid(xnew[,1], xnew[,2])
 grid.yhat = knn(M[tr,-1], M[tr,1], k=k, test=grid)
 np = 300
 par(mar=rep(2,4), mgp = c(1, 1, 0))
-contour(xnew[,1], xnew[,2], z = matrix(grid.yhat, size), levels=.5,
+contour(xnew[,1], xnew[,2], z = matrix(grid.yhat, size), levels=.5, 
         xlab=expression("x"[1]), ylab=expression("x"[2]), axes=FALSE,
         main = paste0(k,"-nearest neighbors"), cex=1.2, labels="")
 points(grid, pch=".", cex=1, col=grid.yhat)
 points(M[1:np,-1], col=factor(M[1:np,1]), pch = 1, lwd = 1.5)
-legend("topleft", c("Player 1 wins", "Player 2 wins"),
+legend("topleft", c("Player 1 wins", "Player 2 wins"), 
        col=c("red", "black"), pch=1)
 box()
 ```
 
 
-**Q14:**
-We produce an ROC, Receiver Operating Characteristics, curve by comparing the specificity of the classifier to the sensitivity.  
-
-
+**Q14:** 
 
 ```{r,eval=TRUE}
 K=30
-
+  
 # knn with prob=TRUE outputs the probability of the winning class
 # therefore we have to do an extra step to get the probability of player 1 winning
 KNNclass=class::knn(train=M[tr,-1], cl=M[tr,1], test=M[-tr,-1], k = K,prob=TRUE)
@@ -228,12 +227,10 @@ KNNprob= ifelse(KNNclass == "0", 1-KNNprobwinning, KNNprobwinning)
 # now KNNprob has probability that player 1 wins, for all matches in the test set
 
 library(pROC)
-# now you use predictor=KNNprob and response=M[-tr,1]
+# now you use predictor=KNNprob and response=M[-tr,1] 
 # in your call to the function roc in the pROC library-tr,1
 M_roc = roc(M[-tr,1], KNNprob, lagacy.axes = TRUE )
-M_auc = auc(M_roc)
-ggroc(M_roc) + ggtitle("ROC")
-cat("The AUC is: ", M_auc)
+ggroc(M_roc) + ggtitle("Vi prover aa plotte ROC")
 ```
 
 **Q15:**
@@ -243,42 +240,44 @@ cat("The AUC is: ", M_auc)
 ```
 
 
-# Problem 3: Bias-variance trade-off
-Let $\bf{x}$ be a $(p+1) \times 1$ vector of covariates (including a constant 1 as the first term). We are considering a regression problem $Y = f(\bf{x})$, where $\text{E}(\bf{\epsilon}) = 0$ and $\text{Var}(\bf{\epsilon}) = \sigma^2$. We assume that the true function is really a linear combination of the observed covariates, which means that the irreducible error only lies in the $\bf{\epsilon}$-term.
+# Problem 3: Bias-variance trade-off 
+Let $\bf{x}$ be a $(p+1) \times 1$ vector of covariates (including a constant 1 as the first term). We are considering a regression problem $Y = f(\bf{x})$, where $\text{E}(\bf{\epsilon}) = 0$ and $\text{Var}(\bf{\epsilon}) = \sigma^2$. We assume that the true function is really a linear combination of the observed covariates, which means that the irreducible error only lies in the $\bf{\epsilon}$-term. 
 
 We will consider two estimators for $\bf{\beta}$. The estimators are based on a training set where $\text{X}$ is a $n\times (p-1)$ design matrix and $\textbf{Y}$ is a $n \times 1$ response vector, with independent entries.
 Thus $\text{E}(\textbf{Y})=\text{X}\bf{\beta}$ and covariance matrix $\text{Cov}(\textbf{Y})=\sigma^2 \text{I}$
 
 The first estimator $\hat{\beta}$ is the classical least squares estimator, defined as $$\bf{\hat{\beta}} = (\text{X}^T\text{X})^{-1}\text{X}^T\textbf{Y}$$.
-**Q16:**
-$$\text{E}(\boldsymbol{\hat{\beta}}) = (\text{X}^T\text{X})^{-1}\text{X}^T\text{E}[\textbf{Y}] = (\text{X}^T\text{X})^{-1}\text{X}^T\text{X} \boldsymbol{\beta} = \boldsymbol{\beta}$$
+**Q16:** 
+$$\text{E}(\boldsymbol{\hat{\beta}}) = (\text{X}^T\text{X})^{-1}\text{X}^T\text{E}[\textbf{Y}] = (\text{X}^T\text{X})^{-1}\text{X}^T\text{X} \boldsymbol{\beta} = \boldsymbol{\beta}$$ 
 $$\text{Var}(\boldsymbol{\hat{\beta}}) = (\text{X}^T\text{X})^{-1}\text{X}^T \sigma^2 \text{I} \big[ (\text{X}^T\text{X})^{-1}\text{X}^T\big]^T = \sigma^2 (\text{X}^T\text{X})^{-1}\text{X}^T\text{X}(\text{X}^T\text{X})^{-1} = \sigma^2 (\text{X}^T\text{X})^{-1}$$
 **Q17:**
 $\hat{f}(\mathbf{x_0}) = \bf{x_0}^T\boldsymbol{\hat{\beta}}$, thus:
 $$\text{E}[\hat{f}(\mathbf{x_0})] = \mathbf{x_0}^T \text{E}[\boldsymbol{\hat{\beta}}] = \mathbf{x_0}^T \boldsymbol{\beta}$$
 and
 $$\text{Var}(\hat{f}(\mathbf{x_0})) = \mathbf{x_0}^T\sigma^2(\text{X}^T\text{X})^{-1}\mathbf{x_0}$$
-**Q18:**
+**Q18:** 
 $$\text{E}[(Y_0-\hat{f}(\mathbf{x_0}))]=[\text{E}(\hat{f}(\mathbf{x_0})-f(\mathbf{x}_0))]^2+\text{Var}(\hat{f}(\mathbf{x}_0) ) + \text{Var}(\boldsymbol{\epsilon}) = 0 + \sigma^2\mathbf{x_0}T(\text{X}^T\text{X})^{-1}\mathbf{x_0} + \sigma^2 \\
-= \sigma^2(\mathbf{x_0}^T(\text{X}^T\text{X})^{-1}\mathbf{x_0} + I)$$
+= \sigma^2(\mathbf{x_0}^T(\text{X}^T\text{X})^{-1}\mathbf{x_0} + 1)$$
 
-The second estimator of $\boldsymbol{\beta}$ is the Ridge regression estimator, defined as
+The second estimator of $\boldsymbol{\beta}$ is the Ridge regression estimator, defined as 
 
 $$\widetilde{\boldsymbol \beta}=(\text{X}^T\text{X}+\lambda \text{I})^{-1}\text{X}^T{\mathbf Y}$$
-Where the $\lambda$ is called a regularization parameter. Notice that for $\lambda = 0$, $\boldsymbol{\hat{\beta}}=\boldsymbol{\widetilde{\beta}}$.   
-**Q19:**
-$$\text{E}[\boldsymbol{\widetilde{\beta}}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \: \text{E}[\mathbf{Y}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}\boldsymbol{\beta},$$   
+Where the $\lambda$ is called a regularization parameter. Notice that for $\lambda = 0$, $\boldsymbol{\hat{\beta}}=\boldsymbol{\widetilde{\beta}}$. To simplify, we define $\text{W} = (\text{X}^T\text{X}+\lambda \text{I})^{-1}\text{X}^T$.  
+**Q19:** 
+$$\text{E}[\boldsymbol{\widetilde{\beta}}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \, \text{E}[\mathbf{Y}] = \text{W}\text{X}\boldsymbol{\beta},$$   
 thus the estimator is biased.  
-$$\text{Var}(\boldsymbol{\widetilde{\beta}}) = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \text{Var}(\mathbf{Y})\big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \sigma^2 I \big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T \\
-= \sigma^2(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\big[ \text{X}(\text{X}^T\text{X}+\lambda I)^{-1} \big] = \sigma^2(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}(\text{X}^T\text{X}+\lambda I)^{-1}$$
+$$\text{Var}(\boldsymbol{\widetilde{\beta}}) = \text{W} \text{Var}(\mathbf{Y})\text{W}^T = \text{W} \sigma^2 I \text{W}^T 
+= \sigma \text{W}\text{W}^T \sigma = \sigma(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}(\text{X}^T\text{X}+\lambda I)^{-1}\sigma$$
 
-**Q20:**
+**Q20:** $$\text{E}(\widetilde{f}(x_0)) = \text{E}(x_0^T \widetilde{\beta}) = x_0^T\text{E}(\widetilde{\beta})=x_0^T\text{W}\text{X}\beta$$
 
-**Q21:**
-$$\text{E}[(Y_0-\widetilde{f}({\bf x}_0))^2]=[\text{E}(\widetilde{f}({\bf x}_0)-f({\bf x}_0)]^2+\text{Var}(\widetilde{f}({\bf x}_0) ) + \text{Var}(\varepsilon)$$
+$$\text{Var}(\widetilde{f}(x_0)) = x_0^T\text{Var}(\widetilde{\beta})x_0 = \sigma x_0^T \text{W} \text{W}^T x_0 \sigma = \sigma (x_0^T\text{W})(x_0^T\text{W})^T\sigma$$
+
+**Q21:** 
+$$\text{E}[(Y_0-\widetilde{f}({\bf x}_0))^2]=[\text{E}(\widetilde{f}({\bf x}_0)-f({\bf x}_0)]^2+\text{Var}(\widetilde{f}({\bf x}_0) ) + \text{Var}(\varepsilon) = (x_0^T\text{W}\text{X}\beta - x_0^T\beta)^2 + \sigma (x_0^T\text{W})(x_0^T\text{W})^T\sigma + \sigma^2$$
 
 
-```{r}
+```{r,echo=FALSE}
 values=dget("https://www.math.ntnu.no/emner/TMA4268/2019v/data/BVtradeoffvalues.dd")
 X=values$X
 dim(X)
@@ -291,13 +290,15 @@ sigma
 ```
 
 
-**Q22:**
+**Q22:** 
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 sqbias=function(lambda,X,x0,beta)
 {
   p=dim(X)[2]
-  value=
+  inv=solve(t(X)%*%X+lambda*diag(p))
+  W = inv%*%t(X)
+  value= (t(x0)%*%W%*%X%*%beta-t(x0)%*%beta)^2
   return(value)
 }
 thislambda=seq(0,2,length=500)
@@ -307,14 +308,16 @@ plot(thislambda,sqbiaslambda,col=2,type="l")
 ```
 This does not exactly look as we expected, the squared bias is increasing as we thought, but the dip around $\lambda = 0.5$.
 
-**Q23:**
 
-```{r,eval=FALSE}
+**Q23:** 
+
+```{r,eval=TRUE}
 variance=function(lambda,X,x0,sigma)
 {
   p=dim(X)[2]
   inv=solve(t(X)%*%X+lambda*diag(p))
-  value=#HERE YOU FILL IN
+  W = inv%*%t(X)
+  value=sigma*(t(x0)%*%W)%*%t(t(x0)%*%W)*sigma
   return(value)
 }
 thislambda=seq(0,2,length=500)
@@ -322,11 +325,12 @@ variancelambda=rep(NA,length(thislambda))
 for (i in 1:length(thislambda)) variancelambda[i]=variance(thislambda[i],X,x0,sigma)
 plot(thislambda,variancelambda,col=4,type="l")
 ```
+The variance curve follows our expectations in the sense that it decreases as lambda increases.
 
 
-**Q24:**
+**Q24:** 
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 tot=sqbiaslambda+variancelambda+sigma^2
 which.min(tot)
 thislambda[which.min(tot)]
@@ -336,3 +340,5 @@ lines(thislambda, variancelambda,col=4)
 lines(thislambda,rep(sigma^2,500),col="orange")
 abline(v=thislambda[which.min(tot)],col=3)
 ```
+The optimal value of $\lambda$ is chosen to minimize the black curve, which is the sum of the irriducible error, the variance and the squared bias. The value optimizing this problem is $\lambda = 0.993988$.
+
