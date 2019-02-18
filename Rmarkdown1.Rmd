@@ -325,6 +325,7 @@ variancelambda=rep(NA,length(thislambda))
 for (i in 1:length(thislambda)) variancelambda[i]=variance(thislambda[i],X,x0,sigma)
 plot(thislambda,variancelambda,col=4,type="l")
 ```
+
 The variance curve follows our expectations in the sense that it decreases as lambda increases.
 
 
@@ -340,5 +341,6 @@ lines(thislambda, variancelambda,col=4)
 lines(thislambda,rep(sigma^2,500),col="orange")
 abline(v=thislambda[which.min(tot)],col=3)
 ```
+
 The optimal value of $\lambda$ is chosen to minimize the black curve, which is the sum of the irriducible error, the variance and the squared bias. The value optimizing this problem is $\lambda = 0.993988$.
 
