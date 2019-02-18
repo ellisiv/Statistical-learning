@@ -102,9 +102,7 @@ A little reasearch shows that noral FEV for males lies between approximately 2 a
 
 # Problem 2: Classification 
 
-```{r, echo=FALSE}
-library(ggplot2)
-library(lattice)
+```{r}
 library(class)# for function knn
 library(caret)# for confusion matrices
 
@@ -135,13 +133,13 @@ for(k in k_values){
   test.e[k] = mean(Mdf[-tr,]$y != knn(Mdf[tr,], Mdf[-tr,],Mdf[tr,]$y, k = k, l = 0))
   train.e[k] = mean(Mdf[tr,]$y != knn(Mdf[tr,], Mdf[tr,],Mdf[tr,]$y, k = k, l = 0))
 }
-qplot(k_values, test.e)+labs(title="Misclassification error for test data")
-qplot(k_values, train.e)+labs(title="Misclassification error for training data")
+qplot(k_values, test.e)
+qplot(k_values, train.e)
 
 ```
 
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 set.seed(0)
 ks = 1:30 # Choose K from 1 to 30.
 idx = createFolds(M[tr,1], k=5) # Divide the training data into 5 folds.
@@ -163,7 +161,7 @@ cv = sapply(ks, function(k){
 
 **Q11:** 
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 cv.e <- vector(mode = "numeric", length = 30)
 for(i in 1:30){
   cv.e[i] = mean(cv[,i])
@@ -173,15 +171,15 @@ for(i in 1:30){
   for(j in 1:5){
     cv.se[i] = cv.se[i] + (cv[j,i]- cv.e[i]) ** 2
   }
-  cv.se[i] = sqrt(1/5 * cv.se[i])
+  cv.se[i] = sqrt(1/n * cv.se[i])
 }
 
 k.min <- which.min(cv.e)
 ```
 
-**Q12:** For a KNN method, the bias decreases as K increases. This is obvious because for small k the model would be over fitted and as k grows it adapts more smoothly to other data sets. The variance of the training set increases when K increases. This is logical since when K = 1, the variance should be zero because all the datapoints are their own nearest neighbour. For this is not the case, and therefore we dont see a variance equal to zero for K = 1. We observe that the variance in $\hat{y}(x)$ for the test data is relatively stable, however we expect it to increase for sufficiently large values of K.
+**Q12:** 
 
-```{r,eval=TRUE}
+```{r,eval=FALSE}
 library(colorspace)
 co = rainbow_hcl(3)
 par(mar=c(4,4,1,1)+.1, mgp = c(3, 1, 0))
@@ -193,9 +191,9 @@ lines(ks, test.e, type="o", pch = 16, ylim = c(0.5, 0.7), col = co[1])
 legend("topright", legend = c("Test", "5-fold CV", "Training"), lty = 1, col=co)
 ```
 
-**Q13:** The most important properties of a good value for K, is that it provides a small misclassification error and it should produce a prediction model with low bias. The strategy is to find the k-value which produces the smallest misclassification error in the 5-fold test and check if we can find a k where the misclassification error is not that much worse and which gives a smaller bias. We accept a misclassification error equal to the error of the best k plus one time its standard deviation, and choose the largest k satisfying this condition.
+**Q13:** 
 
-```{r,eval=TRUE}
+```{r,eval=FALSE}
 k = tail(which(cv.e < cv.e[k.min] + cv.se[k.min]), 1)
 size = 100
 xnew = apply(M[tr,-1], 2, function(X) seq(min(X), max(X), length.out=size))
@@ -215,6 +213,9 @@ box()
 
 
 **Q14:** 
+We produce an ROC, Receiver Operating Characteristics, curve by comparing the specificity of the classifier to the sensitivity.  
+
+
 
 ```{r,eval=TRUE}
 K=30
@@ -230,7 +231,9 @@ library(pROC)
 # now you use predictor=KNNprob and response=M[-tr,1] 
 # in your call to the function roc in the pROC library-tr,1
 M_roc = roc(M[-tr,1], KNNprob, lagacy.axes = TRUE )
-ggroc(M_roc) + ggtitle("Vi prover aa plotte ROC")
+M_auc = auc(M_roc)
+ggroc(M_roc) + ggtitle("ROC")
+cat("The AUC is: ", M_auc)
 ```
 
 **Q15:**
@@ -257,27 +260,25 @@ and
 $$\text{Var}(\hat{f}(\mathbf{x_0})) = \mathbf{x_0}^T\sigma^2(\text{X}^T\text{X})^{-1}\mathbf{x_0}$$
 **Q18:** 
 $$\text{E}[(Y_0-\hat{f}(\mathbf{x_0}))]=[\text{E}(\hat{f}(\mathbf{x_0})-f(\mathbf{x}_0))]^2+\text{Var}(\hat{f}(\mathbf{x}_0) ) + \text{Var}(\boldsymbol{\epsilon}) = 0 + \sigma^2\mathbf{x_0}T(\text{X}^T\text{X})^{-1}\mathbf{x_0} + \sigma^2 \\
-= \sigma^2(\mathbf{x_0}^T(\text{X}^T\text{X})^{-1}\mathbf{x_0} + 1)$$
+= \sigma^2(\mathbf{x_0}^T(\text{X}^T\text{X})^{-1}\mathbf{x_0} + I)$$
 
 The second estimator of $\boldsymbol{\beta}$ is the Ridge regression estimator, defined as 
 
 $$\widetilde{\boldsymbol \beta}=(\text{X}^T\text{X}+\lambda \text{I})^{-1}\text{X}^T{\mathbf Y}$$
-Where the $\lambda$ is called a regularization parameter. Notice that for $\lambda = 0$, $\boldsymbol{\hat{\beta}}=\boldsymbol{\widetilde{\beta}}$. To simplify, we define $\text{W} = (\text{X}^T\text{X}+\lambda \text{I})^{-1}\text{X}^T$.  
+Where the $\lambda$ is called a regularization parameter. Notice that for $\lambda = 0$, $\boldsymbol{\hat{\beta}}=\boldsymbol{\widetilde{\beta}}$.   
 **Q19:** 
-$$\text{E}[\boldsymbol{\widetilde{\beta}}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \, \text{E}[\mathbf{Y}] = \text{W}\text{X}\boldsymbol{\beta},$$   
+$$\text{E}[\boldsymbol{\widetilde{\beta}}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \: \text{E}[\mathbf{Y}] = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}\boldsymbol{\beta},$$   
 thus the estimator is biased.  
-$$\text{Var}(\boldsymbol{\widetilde{\beta}}) = \text{W} \text{Var}(\mathbf{Y})\text{W}^T = \text{W} \sigma^2 I \text{W}^T 
-= \sigma \text{W}\text{W}^T \sigma = \sigma(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}(\text{X}^T\text{X}+\lambda I)^{-1}\sigma$$
+$$\text{Var}(\boldsymbol{\widetilde{\beta}}) = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \text{Var}(\mathbf{Y})\big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T = (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \sigma^2 I \big[ (\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T \big]^T \\ 
+= \sigma^2(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\big[ \text{X}(\text{X}^T\text{X}+\lambda I)^{-1} \big] = \sigma^2(\text{X}^T\text{X} + \lambda I)^{-1}\text{X}^T\text{X}(\text{X}^T\text{X}+\lambda I)^{-1}$$
 
-**Q20:** $$\text{E}(\widetilde{f}(x_0)) = \text{E}(x_0^T \widetilde{\beta}) = x_0^T\text{E}(\widetilde{\beta})=x_0^T\text{W}\text{X}\beta$$
-
-$$\text{Var}(\widetilde{f}(x_0)) = x_0^T\text{Var}(\widetilde{\beta})x_0 = \sigma x_0^T \text{W} \text{W}^T x_0 \sigma = \sigma (x_0^T\text{W})(x_0^T\text{W})^T\sigma$$
+**Q20:** 
 
 **Q21:** 
-$$\text{E}[(Y_0-\widetilde{f}({\bf x}_0))^2]=[\text{E}(\widetilde{f}({\bf x}_0)-f({\bf x}_0)]^2+\text{Var}(\widetilde{f}({\bf x}_0) ) + \text{Var}(\varepsilon) = (x_0^T\text{W}\text{X}\beta - x_0^T\beta)^2 + \sigma (x_0^T\text{W})(x_0^T\text{W})^T\sigma + \sigma^2$$
+$$\text{E}[(Y_0-\widetilde{f}({\bf x}_0))^2]=[\text{E}(\widetilde{f}({\bf x}_0)-f({\bf x}_0)]^2+\text{Var}(\widetilde{f}({\bf x}_0) ) + \text{Var}(\varepsilon)$$
 
 
-```{r,echo=FALSE}
+```{r}
 values=dget("https://www.math.ntnu.no/emner/TMA4268/2019v/data/BVtradeoffvalues.dd")
 X=values$X
 dim(X)
@@ -292,13 +293,11 @@ sigma
 
 **Q22:** 
 
-```{r,eval=TRUE}
+```{r,eval=FALSE}
 sqbias=function(lambda,X,x0,beta)
 {
   p=dim(X)[2]
-  inv=solve(t(X)%*%X+lambda*diag(p))
-  W = inv%*%t(X)
-  value= (t(x0)%*%W%*%X%*%beta-t(x0)%*%beta)^2
+  value= 
   return(value)
 }
 thislambda=seq(0,2,length=500)
@@ -306,18 +305,15 @@ sqbiaslambda=rep(NA,length(thislambda))
 for (i in 1:length(thislambda)) sqbiaslambda[i]=sqbias(thislambda[i],X,x0,beta)
 plot(thislambda,sqbiaslambda,col=2,type="l")
 ```
-This does not exactly look as we expected, the squared bias is increasing as we thought, but the dip around 0.5.
-
 
 **Q23:** 
 
-```{r,eval=TRUE}
+```{r,eval=FALSE}
 variance=function(lambda,X,x0,sigma)
 {
   p=dim(X)[2]
   inv=solve(t(X)%*%X+lambda*diag(p))
-  W = inv%*%t(X)
-  value=sigma*(t(x0)%*%W)%*%t(t(x0)%*%W)*sigma
+  value=#HERE YOU FILL IN
   return(value)
 }
 thislambda=seq(0,2,length=500)
@@ -325,12 +321,11 @@ variancelambda=rep(NA,length(thislambda))
 for (i in 1:length(thislambda)) variancelambda[i]=variance(thislambda[i],X,x0,sigma)
 plot(thislambda,variancelambda,col=4,type="l")
 ```
-The variance curve follows our expectations in the sense that it decreases as lambda increases.
 
 
 **Q24:** 
 
-```{r,eval=TRUE}
+```{r,eval=FALSE}
 tot=sqbiaslambda+variancelambda+sigma^2
 which.min(tot)
 thislambda[which.min(tot)]
@@ -340,5 +335,5 @@ lines(thislambda, variancelambda,col=4)
 lines(thislambda,rep(sigma^2,500),col="orange")
 abline(v=thislambda[which.min(tot)],col=3)
 ```
-The optimal value of $\lambda$ is chosen to minimize the black curve, which is the sum of the irriducible error, the variance and the squared bias. The value optimizing this problem is $\lambda = 0.993988$.
 
+slkughsoliufbh+
