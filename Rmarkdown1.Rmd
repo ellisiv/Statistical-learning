@@ -306,7 +306,7 @@ sqbiaslambda=rep(NA,length(thislambda))
 for (i in 1:length(thislambda)) sqbiaslambda[i]=sqbias(thislambda[i],X,x0,beta)
 plot(thislambda,sqbiaslambda,col=2,type="l")
 ```
-This does not exactly look as we expected, the squared bias is increasing as we thought, but the dip around 0.5.
+This does not exactly look as we expected, the squared bias is increasing as we thought, but the dip around $\lambda = 0.5$.
 
 
 **Q23:** 
