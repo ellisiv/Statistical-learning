@@ -2,7 +2,7 @@
 title: "Compulsory exercise 1"
 author: "Ellisiv Steen, Johanne Skogvang, Helene Behrens"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -98,7 +98,7 @@ upp <- exp(prelog[3])
 
 cat('Predicted "forced expiratory colume" (FEV) = ', prediction, '. \n 95% confidence intercal = [',low, ',',upp,']' )
 ```
-A little reasearch shows that noral FEV for males lies between approximately 2 and 5, which means that the information provided by the prediction interval is of little value as the interval is relatively wide.
+A little reasearch shows that normal FEV for males lies between approximately 2 and 5, which means that the information provided by the prediction interval is of little value as the interval is relatively wide.
 
 # Problem 2: Classification 
 
@@ -179,7 +179,7 @@ for(i in 1:30){
 k.min <- which.min(cv.e)
 ```
 
-**Q12:** For a KNN method, the bias decreases as K increases. This is obvious because for small k the model would be over fitted and as k grows it adapts more smoothly to other data sets. The variance of the training set increases when K increases. This is logical since when K = 1, the variance should be zero because all the datapoints are their own nearest neighbour. For this is not the case, and therefore we dont see a variance equal to zero for K = 1. We observe that the variance in $\hat{y}(x)$ for the test data is relatively stable, however we expect it to increase for sufficiently large values of K.
+**Q12:** The bias in a KNN method will increase with an increasing K and this is due to decreasing complexity. A very complex model can fit models which is less or equal in complexity, and that means that when the complexity decreases we are not able to fit complex "true models". This explains why the bias increases for increasing K in general. The variance on the other hand, decreases for increasing K because the estimated models becomes more stable for perturbations in the data set.
 
 ```{r,eval=TRUE}
 library(colorspace)
@@ -193,7 +193,7 @@ lines(ks, test.e, type="o", pch = 16, ylim = c(0.5, 0.7), col = co[1])
 legend("topright", legend = c("Test", "5-fold CV", "Training"), lty = 1, col=co)
 ```
 
-**Q13:** The most important properties of a good value for K, is that it provides a small misclassification error and it should produce a prediction model with low bias. The strategy is to find the k-value which produces the smallest misclassification error in the 5-fold test and check if we can find a k where the misclassification error is not that much worse and which gives a smaller bias. We accept a misclassification error equal to the error of the best k plus one time its standard deviation, and choose the largest k satisfying this condition.
+**Q13:** The most important properties of a good value for K, is that it provides a small misclassification error and it should produce a prediction model with low complexity. The strategy is to find the k-value which produces the smallest misclassification error in the 5-fold test and see if we can choose a higher k with not that much worse misclassification error. We accept a misclassification error equal to the error of the best k plus one time its standard deviation, and choose the largest k satisfying this condition.
 
 ```{r,eval=TRUE}
 k = tail(which(cv.e < cv.e[k.min] + cv.se[k.min]), 1)
@@ -306,7 +306,8 @@ sqbiaslambda=rep(NA,length(thislambda))
 for (i in 1:length(thislambda)) sqbiaslambda[i]=sqbias(thislambda[i],X,x0,beta)
 plot(thislambda,sqbiaslambda,col=2,type="l")
 ```
-This does not exactly look as we expected, the squared bias is increasing as we thought, but the dip around $\lambda = 0.5$.
+
+This does not exactly look as we expected, the squared bias is increasing as we thought, but the dip around $\lambda = 0.5$ was unexpected. The expected increase in bias is due to a damping of the estimated coefficients which leads to lower complexity and thus higher bias.  
 
 
 **Q23:** 
@@ -326,7 +327,7 @@ for (i in 1:length(thislambda)) variancelambda[i]=variance(thislambda[i],X,x0,si
 plot(thislambda,variancelambda,col=4,type="l")
 ```
 
-The variance curve follows our expectations in the sense that it decreases as lambda increases.
+The variance curve follows our expectations in the sense that it decreases as lambda increases i.e. the complexity decreases.
 
 
 **Q24:** 
