@@ -239,6 +239,7 @@ KNNprob= ifelse(KNNclass == "0", 1-KNNprobwinning, KNNprobwinning)
 library(pROC)
 # now you use predictor=KNNprob and response=M[-tr,1] 
 # in your call to the function roc in the pROC library-tr,1
+#p
 M_roc = roc(M[-tr,1], KNNprob, lagacy.axes = TRUE )
 M_auc <- auc(M_roc)
 M_auc
