@@ -2,7 +2,7 @@
 title: "Compulsory exercise 1"
 author: "Ellisiv Steen, Johanne Skogvang, Helene Behrens"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Problem 1: Multiple linear regression
 
 
-```{r lungcap, echo=FALSE}
+```{r lungcap, echo=TRUE}
 library(GLMsData)
 data("lungcap")
 lungcap$Htcm=lungcap$Ht*2.54
@@ -65,7 +65,7 @@ ad.test(rstudent(modelA))
 
 **Q5:** We now introduce a new model, modelB, which is defined below. We see that in modelB, the residuals are not equally distributed around zero and the variance increases for higher fitted values. We would prefere to use modelA when making inference about FEV because the mean value of the residuals in modelA is approximately zero for all fitted values and the variance is stabile. We have observed that none of this is true for modelB.
 
-```{r,eval=TRUE, echo=FALSE}
+```{r,eval=TRUE, echo=TRUE}
 modelB = lm(FEV ~ Age + Htcm + Gender + Smoke, data=lungcap)
 ggplot(modelB, aes(.fitted, .stdresid)) + geom_point(pch = 21) +
   geom_hline(yintercept = 0, linetype = "dashed") +
@@ -102,7 +102,7 @@ A little reasearch shows that normal FEV for males lies between approximately 2 
 
 # Problem 2: Classification 
 
-```{r, echo=FALSE}
+```{r, echo=TRUE}
 library(ggplot2)
 library(lattice)
 library(class)# for function knn
@@ -369,7 +369,7 @@ $$\text{Var}(\widetilde{f}(x_0)) = x_0^T\text{Var}(\widetilde{\beta})x_0 = \sigm
 $$\text{E}[(Y_0-\widetilde{f}({\bf x}_0))^2]=[\text{E}(\widetilde{f}({\bf x}_0)-f({\bf x}_0)]^2+\text{Var}(\widetilde{f}({\bf x}_0) ) + \text{Var}(\varepsilon) = (x_0^T\text{W}\text{X}\beta - x_0^T\beta)^2 + \sigma (x_0^T\text{W})(x_0^T\text{W})^T\sigma + \sigma^2$$
 
 
-```{r,echo=FALSE}
+```{r,echo=TRUE}
 values=dget("https://www.math.ntnu.no/emner/TMA4268/2019v/data/BVtradeoffvalues.dd")
 X=values$X
 dim(X)
