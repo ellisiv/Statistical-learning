@@ -2,7 +2,7 @@
 title: "Compulsory exercise 1"
 author: "Ellisiv Steen, Johanne Skogvang, Helene Behrens"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -215,16 +215,17 @@ box()
 
 **Q14:** 
 
-We plot an ROC curve, an Receiver Operating Characteristics curve, which compares the specificity and the sensitivity of the classifier. We define the specificity and sensitivity as 
-$$\text{Specificity} = \frac{\text{True Negative}}{\text{Negiative}}\\ \text{Sensitivity} = \frac{\text{True Positive}}{\text{Positive}}.$$ 
+We plot a ROC curve, an Receiver Operating Characteristics curve, which compares the specificity and the sensitivity of the classifier. We define the specificity and sensitivity as 
+$$\text{Specificity} = \frac{\text{True Negative}}{\text{Negiative}}$$
+$$\text{Sensitivity} = \frac{\text{True Positive}}{\text{Positive}}.$$ 
 An ideal model would have both specificity and sensitivity of 1, which would mean that all wins (positives) would be classified as wins, and all losses (negatives) would be classified as losses. We plot the sensitivity against the specificity for different threshold rates, with the sensitivity increasing from zero and the specificity decreasing from one, and we will thus wish for the curve to hug the upper left corner of the plot.
-We can think of the threshold as the porbability p,for which we classify the match as won;
+We can think of the threshold as the proability p,for which we predict the match to be won;
 
-The match is classified as won by player 1 if P(Player 1 wins the game) > p.
+The match is predicted as won by player 1 if P(Player 1 wins the game) > p.
 
-When we do random guessing, we will expect that the number of wins that are correctly classified increases with a decreasing p, as it means that over all, more matches will be classified as wins. Equivalently, the number of correctly classified losses will decrease. Thus, when p decreases from 1 to 0, the relation between the spesificity and the sensitivity will change accordingly, and we will observe a straight line;
+When we do random guessing, we will expect that the number of wins that are correctly classified increases with a decreasing p, as it means that over all, more matches will be classified as wins. Equivalently, the number of correctly classified losses will decrease. Thus, when p decreases from 1 to 0, the relation between the specificity and the sensitivity will change accordingly, and we will observe a straight line;
 $$\text{Sensitivity} = 1 - \text{Specificity}$$
-This will also mean that the area under the curve, the AUC, is 0.5. 
+This will also mean that the area under the curve, with random guessing as the classifier, the AUC, is 0.5.
 
 ```{r,eval=TRUE}
 K=30
@@ -248,9 +249,9 @@ ggroc(M_roc) + ggtitle("ROC") + xlab("Specificity") + ylab("Sensitivity")
 
 ```
 
-**Q15:**
+We see that with the knn-classifier, the AUC is 0.8, which is considerably higher that the AUC we get from random guessing. 
 
-We see that the misclassification error on the test data is lower with $\tilde{y}$ than with $\hat{y}$, and thus we would prefer to use $\tilde{y}$.
+**Q15:**
 
 ```{r,eval=TRUE}
 #The code from Q13:
@@ -283,7 +284,6 @@ conf_knn <- confusionMatrix(knn(Mdf[tr,],Mdf[-tr,],Mdf[tr,]$y, k = 30, l = 0),Md
 print(conf_knn)
 
 cat("Misclassification error for knn: ", 1 - conf_knn$overall['Accuracy'],'\n')
-cat("Confusion matrix for the argmax classifier \n: \n")
 
 test.y <- M[-tr,1]
 test.x1 <- M[-tr,2]
@@ -325,12 +325,20 @@ for (j in 1:length(test.x1)){
 }
 
 argmax_cm <- matrix(c(TN,FP,FN,TP), nrow = 2, dimnames = list(c(0,1),c(0,1)))
-argmax_cm
-
-cat("\n Misclassification error for argmax classifier: ",(FP+FN)/(TN+FP+FN+TP))
 
 ```
 
+```{r, echo=F}
+
+cat("Confusion matrix for the argmax classifier \n")
+
+argmax_cm
+
+cat("\n Misclassification error for argmax classifier: ",(FP+FN)/(TN+FP+FN+TP))
+```
+
+
+We see that the misclassification error on the test data is lower with $\tilde{y} = \underset{k}{\mathrm{argmax}}(x_k)$ than with $\hat{y}$, $\hat{y}$ being the knn method, and thus we would prefer to use $\tilde{y}$.
 
 # Problem 3: Bias-variance trade-off 
 Let $\bf{x}$ be a $(p+1) \times 1$ vector of covariates (including a constant 1 as the first term). We are considering a regression problem $Y = f(\bf{x})$, where $\text{E}(\bf{\epsilon}) = 0$ and $\text{Var}(\bf{\epsilon}) = \sigma^2$. We assume that the true function is really a linear combination of the observed covariates, which means that the irreducible error only lies in the $\bf{\epsilon}$-term. 

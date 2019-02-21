@@ -122,7 +122,7 @@
   \postauthor{\par}
       \predate{\centering\large\emph}
   \postdate{\par}
-    \date{20 februar, 2019}
+    \date{21 februar, 2019}
 
 
 \begin{document}
@@ -130,6 +130,16 @@
 
 \subsection{Problem 1: Multiple linear
 regression}\label{problem-1-multiple-linear-regression}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(GLMsData)}
+\KeywordTok{data}\NormalTok{(}\StringTok{"lungcap"}\NormalTok{)}
+\NormalTok{lungcap}\OperatorTok{$}\NormalTok{Htcm=lungcap}\OperatorTok{$}\NormalTok{Ht}\OperatorTok{*}\FloatTok{2.54}
+\NormalTok{modelA =}\StringTok{ }\KeywordTok{lm}\NormalTok{(}\KeywordTok{log}\NormalTok{(FEV) }\OperatorTok{~}\StringTok{ }\NormalTok{Age }\OperatorTok{+}\StringTok{ }\NormalTok{Htcm }\OperatorTok{+}\StringTok{ }\NormalTok{Gender }\OperatorTok{+}\StringTok{ }\NormalTok{Smoke, }\DataTypeTok{data=}\NormalTok{lungcap)}
+\KeywordTok{summary}\NormalTok{(modelA)}
+\end{Highlighting}
+\end{Shaded}
 
 \begin{verbatim}
 ## 
@@ -259,6 +269,18 @@ mean value of the residuals in modelA is approximately zero for all
 fitted values and the variance is stabile. We have observed that none of
 this is true for modelB.
 
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{modelB =}\StringTok{ }\KeywordTok{lm}\NormalTok{(FEV }\OperatorTok{~}\StringTok{ }\NormalTok{Age }\OperatorTok{+}\StringTok{ }\NormalTok{Htcm }\OperatorTok{+}\StringTok{ }\NormalTok{Gender }\OperatorTok{+}\StringTok{ }\NormalTok{Smoke, }\DataTypeTok{data=}\NormalTok{lungcap)}
+\KeywordTok{ggplot}\NormalTok{(modelB, }\KeywordTok{aes}\NormalTok{(.fitted, .stdresid)) }\OperatorTok{+}\StringTok{ }\KeywordTok{geom_point}\NormalTok{(}\DataTypeTok{pch =} \DecValTok{21}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_hline}\NormalTok{(}\DataTypeTok{yintercept =} \DecValTok{0}\NormalTok{, }\DataTypeTok{linetype =} \StringTok{"dashed"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_smooth}\NormalTok{(}\DataTypeTok{se =} \OtherTok{FALSE}\NormalTok{, }\DataTypeTok{col =} \StringTok{"red"}\NormalTok{, }\DataTypeTok{size =} \FloatTok{0.5}\NormalTok{, }\DataTypeTok{method =} \StringTok{"loess"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{"Fitted values"}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Standardized residuals"}\NormalTok{,}
+       \DataTypeTok{title =} \StringTok{"Fitted values vs. standardized residuals for modelB"}\NormalTok{,}
+       \DataTypeTok{subtitle =} \KeywordTok{deparse}\NormalTok{(modelB}\OperatorTok{$}\NormalTok{call))}
+\end{Highlighting}
+\end{Shaded}
+
 \includegraphics{Rmarkdown1_files/figure-latex/unnamed-chunk-2-1.pdf}
 
 \textbf{Q6:} We are interessted in finding out if the \(\beta_1 = 0\),
@@ -316,6 +338,25 @@ prediction interval is of little value as the interval is relatively
 wide.
 
 \section{Problem 2: Classification}\label{problem-2-classification}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(ggplot2)}
+\KeywordTok{library}\NormalTok{(lattice)}
+\KeywordTok{library}\NormalTok{(class)}\CommentTok{# for function knn}
+\KeywordTok{library}\NormalTok{(caret)}\CommentTok{# for confusion matrices}
+
+\NormalTok{raw =}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"https://www.math.ntnu.no/emner/TMA4268/2019v/data/tennis.csv"}\NormalTok{)}
+\NormalTok{M =}\StringTok{ }\KeywordTok{na.omit}\NormalTok{(}\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{y=}\KeywordTok{as.factor}\NormalTok{(raw}\OperatorTok{$}\NormalTok{Result),}
+                       \DataTypeTok{x1=}\NormalTok{raw}\OperatorTok{$}\NormalTok{ACE.}\DecValTok{1}\OperatorTok{-}\NormalTok{raw}\OperatorTok{$}\NormalTok{UFE.}\DecValTok{1}\OperatorTok{-}\NormalTok{raw}\OperatorTok{$}\NormalTok{DBF.}\DecValTok{1}\NormalTok{, }
+                       \DataTypeTok{x2=}\NormalTok{raw}\OperatorTok{$}\NormalTok{ACE.}\DecValTok{2}\OperatorTok{-}\NormalTok{raw}\OperatorTok{$}\NormalTok{UFE.}\DecValTok{2}\OperatorTok{-}\NormalTok{raw}\OperatorTok{$}\NormalTok{DBF.}\DecValTok{2}\NormalTok{))}
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{4268}\NormalTok{) }\CommentTok{# for reproducibility}
+\NormalTok{tr =}\StringTok{ }\KeywordTok{sample.int}\NormalTok{(}\KeywordTok{nrow}\NormalTok{(M),}\KeywordTok{nrow}\NormalTok{(M)}\OperatorTok{/}\DecValTok{2}\NormalTok{)}
+\NormalTok{trte=}\KeywordTok{rep}\NormalTok{(}\DecValTok{1}\NormalTok{,}\KeywordTok{nrow}\NormalTok{(M))}
+\NormalTok{trte[tr]=}\DecValTok{0}
+\NormalTok{Mdf=}\KeywordTok{data.frame}\NormalTok{(M,}\StringTok{"istest"}\NormalTok{=}\KeywordTok{as.factor}\NormalTok{(trte))}
+\end{Highlighting}
+\end{Shaded}
 
 \textbf{Q9:} The mathematical formula for the K-nearest neighbours
 estimator is
@@ -449,10 +490,11 @@ the largest k satisfying this condition.
 
 \textbf{Q14:}
 
-We plot an ROC curve, an Receiver Operating Characteristics curve, which
+We plot a ROC curve, an Receiver Operating Characteristics curve, which
 compares the specificity and the sensitivity of the classifier. We
 define the specificity and sensitivity as
-\[\text{Specificity} = \frac{\text{True Negative}}{\text{Negiative}}\\ \text{Sensitivity} = \frac{\text{True Positive}}{\text{Positive}}.\]
+\[\text{Specificity} = \frac{\text{True Negative}}{\text{Negiative}}\]
+\[\text{Sensitivity} = \frac{\text{True Positive}}{\text{Positive}}.\]
 An ideal model would have both specificity and sensitivity of 1, which
 would mean that all wins (positives) would be classified as wins, and
 all losses (negatives) would be classified as losses. We plot the
@@ -746,17 +788,46 @@ thus the estimator is biased.\\
 \textbf{Q21:}
 \[\text{E}[(Y_0-\widetilde{f}({\bf x}_0))^2]=[\text{E}(\widetilde{f}({\bf x}_0)-f({\bf x}_0)]^2+\text{Var}(\widetilde{f}({\bf x}_0) ) + \text{Var}(\varepsilon) = (x_0^T\text{W}\text{X}\beta - x_0^T\beta)^2 + \sigma (x_0^T\text{W})(x_0^T\text{W})^T\sigma + \sigma^2\]
 
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{values=}\KeywordTok{dget}\NormalTok{(}\StringTok{"https://www.math.ntnu.no/emner/TMA4268/2019v/data/BVtradeoffvalues.dd"}\NormalTok{)}
+\NormalTok{X=values}\OperatorTok{$}\NormalTok{X}
+\KeywordTok{dim}\NormalTok{(X)}
+\end{Highlighting}
+\end{Shaded}
+
 \begin{verbatim}
 ## [1] 100  81
 \end{verbatim}
 
-\begin{verbatim}
-## [1] 81  1
-\end{verbatim}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{x0=values}\OperatorTok{$}\NormalTok{x0}
+\KeywordTok{dim}\NormalTok{(x0)}
+\end{Highlighting}
+\end{Shaded}
 
 \begin{verbatim}
 ## [1] 81  1
 \end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{beta=values}\OperatorTok{$}\NormalTok{beta}
+\KeywordTok{dim}\NormalTok{(beta)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 81  1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sigma=values}\OperatorTok{$}\NormalTok{sigma}
+\NormalTok{sigma}
+\end{Highlighting}
+\end{Shaded}
 
 \begin{verbatim}
 ## [1] 0.5
