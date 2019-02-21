@@ -2,7 +2,7 @@
 title: "Compulsory exercise 1"
 author: "Ellisiv Steen, Johanne Skogvang, Helene Behrens"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -216,15 +216,15 @@ box()
 **Q14:** 
 
 We plot an ROC curve, an Receiver Operating Characteristics curve, which compares the specificity and the sensitivity of the classifier. We define the specificity and sensitivity as 
-$$\text{Specificity} = \frac{\text{True Negative}}{\text{Negiative}}\\ \text{Sensitivity} = \frac{\text{True Positive}}{\text{Positive}}$$. 
+$$\text{Specificity} = \frac{\text{True Negative}}{\text{Negiative}}\\ \text{Sensitivity} = \frac{\text{True Positive}}{\text{Positive}}.$$ 
 An ideal model would have both specificity and sensitivity of 1, which would mean that all wins (positives) would be classified as wins, and all losses (negatives) would be classified as losses. We plot the sensitivity against the specificity for different threshold rates, with the sensitivity increasing from zero and the specificity decreasing from one, and we will thus wish for the curve to hug the upper left corner of the plot.
 We can think of the threshold as the porbability p,for which we classify the match as won;
 
 The match is classified as won by player 1 if P(Player 1 wins the game) > p.
 
 When we do random guessing, we will expect that the number of wins that are correctly classified increases with a decreasing p, as it means that over all, more matches will be classified as wins. Equivalently, the number of correctly classified losses will decrease. Thus, when p decreases from 1 to 0, the relation between the spesificity and the sensitivity will change accordingly, and we will observe a straight line;
-$$\text{Specificity} = 1 - \text{Sensitivity}$$
-This will also mean that the AUC = 0.5. 
+$$\text{Sensitivity} = 1 - \text{Specificity}$$
+This will also mean that the area under the curve, the AUC, is 0.5. 
 
 ```{r,eval=TRUE}
 K=30
