@@ -376,6 +376,8 @@ $$\text{Var}(\widetilde{f}(x_0)) = x_0^T\text{Var}(\widetilde{\beta})x_0 = \sigm
 **Q21:** 
 $$\text{E}[(Y_0-\widetilde{f}({\bf x}_0))^2]=[\text{E}(\widetilde{f}({\bf x}_0)-f({\bf x}_0)]^2+\text{Var}(\widetilde{f}({\bf x}_0) ) + \text{Var}(\varepsilon) = (x_0^T\text{W}\text{X}\beta - x_0^T\beta)^2 + \sigma (x_0^T\text{W})(x_0^T\text{W})^T\sigma + \sigma^2$$
 
+### Plotting the three components 
+
 
 ```{r,echo=TRUE}
 values=dget("https://www.math.ntnu.no/emner/TMA4268/2019v/data/BVtradeoffvalues.dd")
