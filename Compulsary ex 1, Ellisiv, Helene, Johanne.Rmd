@@ -2,7 +2,7 @@
 title: "Compulsory exercise 1"
 author: "Ellisiv Steen, Johanne Skogvang, Helene Behrens"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
